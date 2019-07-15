@@ -11,6 +11,7 @@ declare_args() {
   extra_ldflags = []
 
   malloc = ""
+  mac_deployment_target = "10.9"
 }
 
 if (is_ios) {
@@ -90,6 +91,23 @@ config("default") {
       lib_dirs +=
           [ "$win_vc/Tools/MSVC/$win_toolchain_version/lib/$target_cpu" ]
     }
+
+    # Configures how the runtime library (CRT) is going to be used.
+    # See https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx for a reference
+    # of what each value does.
+    if (use_dynamic_crt) {
+      if (is_debug) {
+        cflags += [ "/MDd" ]
+      } else {
+        cflags += [ "/MD" ]
+      }
+    } else {
+      if (is_debug) {
+        cflags += [ "/MTd" ]
+      } else {
+        cflags += [ "/MT" ]
+      }
+    }
   } else {
     cflags += [
       "-fstrict-aliasing",
@@ -104,6 +122,10 @@ config("default") {
       cflags += [ "-fvisibility=hidden" ]
       cflags_cc += [ "-fvisibility-inlines-hidden" ]
     }
+  }
+
+  if (is_mac) {
+    cflags += [ "-mmacosx-version-min=$mac_deployment_target" ]
   }
 
   if (current_cpu == "arm") {
@@ -295,6 +317,14 @@ config("warnings") {
     ]
     cflags_cc += [ "-Wnon-virtual-dtor" ]
   }
+  if (!is_win) {
+    add_flags = [
+      "-Wno-int-in-bool-context",
+      "-Wno-noexcept-type",
+    ]
+    cflags += add_flags
+    cflags_cc += add_flags
+  }
 
   if (is_clang) {
     cflags += [
@@ -353,6 +383,9 @@ config("warnings") {
     cflags_cc += [
       "-Wno-abstract-vbase-init",
       "-Wno-weak-vtables",
+      # gcc-9 complains if you write "return std::move()", older Apple Clang
+      # complains if you don't.
+      "-Wno-return-std-move-in-c++11",
     ]
 
     # We are unlikely to want to fix these.

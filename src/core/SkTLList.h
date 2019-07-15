@@ -141,7 +141,8 @@ public:
         this->validate();
         Iter iter(*this, Iter::kHead_IterStart);
         while (iter.get()) {
-            Iter next = iter;
+            Iter next;
+            next = iter;
             next.next();
             this->remove(iter.get());
             iter = next;

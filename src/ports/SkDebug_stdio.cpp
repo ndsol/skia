@@ -14,6 +14,10 @@
 void SkDebugf(const char format[], ...) {
     va_list args;
     va_start(args, format);
+    if (gSkDebugVPrinter) {
+        gSkDebugVPrinter(format, args);
+        return;
+    }
     vfprintf(stderr, format, args);
     va_end(args);
 }

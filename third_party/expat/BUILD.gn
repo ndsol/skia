@@ -18,7 +18,10 @@ if (skia_use_system_expat) {
     public_defines = [ "XML_STATIC" ]
     public_include_dirs = [ "../externals/expat/lib" ]
 
-    defines = [ "HAVE_MEMMOVE" ]
+    defines = [
+      "HAVE_MEMMOVE",
+      "XML_POOR_ENTROPY",
+    ]
 
     sources = [
       "../externals/expat/lib/xmlparse.c",

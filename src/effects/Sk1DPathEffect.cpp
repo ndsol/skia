@@ -120,7 +120,7 @@ static void morphpath(SkPath* dst, const SkPath& src, SkPathMeasure& meas,
                 srcP[2] = srcP[1];
                 srcP[1].set(SkScalarAve(srcP[0].fX, srcP[2].fX),
                             SkScalarAve(srcP[0].fY, srcP[2].fY));
-                // fall through to quad
+                // fall through
             case SkPath::kQuad_Verb:
                 if (morphpoints(dstP, &srcP[1], 2, meas, dist)) {
                     dst->quadTo(dstP[0], dstP[1]);

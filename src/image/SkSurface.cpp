@@ -53,6 +53,12 @@ SkSurfaceProps::SkSurfaceProps(const SkSurfaceProps& other)
     , fPixelGeometry(other.fPixelGeometry)
 {}
 
+SkSurfaceProps& SkSurfaceProps::operator=(const SkSurfaceProps& other) {
+  fFlags = other.fFlags;
+  fPixelGeometry = other.fPixelGeometry;
+  return *this;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 SkSurface_Base::SkSurface_Base(int width, int height, const SkSurfaceProps* props)

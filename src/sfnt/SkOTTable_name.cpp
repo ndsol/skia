@@ -473,6 +473,7 @@ bool SkOTTableName::Iterator::next(SkOTTableName::Iterator::Record& record) {
                 record.name.reset();
                 break;
             }
+            // fall through
         case SkOTTableName::Record::PlatformID::Unicode:
         case SkOTTableName::Record::PlatformID::ISO:
             SkStringFromUTF16BE((const uint16_t*)nameString, nameLength, record.name);

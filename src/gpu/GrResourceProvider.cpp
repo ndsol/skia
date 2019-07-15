@@ -286,7 +286,7 @@ sk_sp<const GrBuffer> GrResourceProvider::findOrMakeStaticBuffer(GrBufferType in
                                                                  const void* data,
                                                                  const GrUniqueKey& key) {
     if (auto buffer = this->findByUniqueKey<GrBuffer>(key)) {
-        return buffer;
+        return buffer;  // std::move converts from sk_sp<GrBuffer> to sk_sp<const GrBuffer>
     }
     if (auto buffer = this->createBuffer(size, intendedType, kStatic_GrAccessPattern, 0,
                                          data)) {
@@ -334,7 +334,7 @@ sk_sp<const GrBuffer> GrResourceProvider::createPatternedIndexBuffer(const uint1
         buffer->unmap();
     }
     this->assignUniqueKeyToResource(key, buffer.get());
-    return std::move(buffer);
+    return buffer;
 }
 
 static constexpr int kMaxQuads = 1 << 12;  // max possible: (1 << 14) - 1;

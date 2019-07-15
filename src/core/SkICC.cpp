@@ -409,7 +409,19 @@ static void get_color_profile_tag(char dst[kICCDescriptionTagSize],
         // "If the length of src is less than n, strncpy() writes additional
         // null bytes to dest to ensure that a total of n bytes are written."
     } else {
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic push
+#endif
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+// Silence error that strncpy is using sizeof(source) not sizeof(dst).
+#pragma GCC diagnostic ignored "-Wsizeof-pointer-memaccess"
+#endif
+        // SkASSERT added to be sure the strncpy does not overrun:
+        SkASSERT(sizeof(kDescriptionTagBodyPrefix) < kICCDescriptionTagSize);
         strncpy(dst, kDescriptionTagBodyPrefix, sizeof(kDescriptionTagBodyPrefix));
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic pop
+#endif
         SkMD5 md5;
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {

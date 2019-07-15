@@ -236,7 +236,7 @@ sk_sp<SkDrawLooper> SkLayerDrawLooper::onMakeColorSpace(SkColorSpaceXformer* xfo
     }
 
     looper->fRecs = newTopRec;
-    return std::move(looper);
+    return looper;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

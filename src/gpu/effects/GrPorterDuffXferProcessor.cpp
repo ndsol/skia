@@ -51,6 +51,15 @@ public:
             , fDstCoeff(dstCoeff)
             , fProps(GetProperties(primaryOut, secondaryOut, equation, srcCoeff, dstCoeff)) {}
 
+    constexpr BlendFormula(const BlendFormula& other)
+            : fPrimaryOutputType(other.fPrimaryOutputType)
+            , fSecondaryOutputType(other.fSecondaryOutputType)
+            , fBlendEquation(other.fBlendEquation)
+            , fSrcCoeff(other.fSrcCoeff)
+            , fDstCoeff(other.fDstCoeff)
+            , fProps(other.fProps)
+    {}
+
     BlendFormula& operator=(const BlendFormula& other) {
         SkDEBUGCODE(other.validatePreoptimized());
         fData = other.fData;

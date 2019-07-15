@@ -38,8 +38,8 @@
 extern "C" {
 // If moving libwebp out of skia source tree, path for webp headers must be
 // updated accordingly. Here, we enforce using local copy in webp sub-directory.
-#include "webp/encode.h"
-#include "webp/mux.h"
+#include "src/webp/encode.h"
+#include "src/webp/mux.h"
 }
 
 static transform_scanline_proc choose_proc(const SkImageInfo& info,

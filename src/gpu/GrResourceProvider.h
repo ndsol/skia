@@ -141,7 +141,7 @@ public:
                                                            int vertCount,
                                                            const GrUniqueKey& key) {
         if (auto buffer = this->findByUniqueKey<GrBuffer>(key)) {
-            return buffer;
+            return buffer;  // std::move converts from sk_sp<GrBuffer> to sk_sp<const GrBuffer>
         }
         return this->createPatternedIndexBuffer(pattern, patternSize, reps, vertCount, key);
     }

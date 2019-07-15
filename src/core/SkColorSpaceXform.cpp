@@ -597,7 +597,7 @@ std::unique_ptr<SkColorSpaceXform> SlowIdentityXform(SkColorSpace_XYZ* space) {
     auto xform = skstd::make_unique<SkColorSpaceXform_XYZ>(space, space,
                                                            SkTransferFunctionBehavior::kRespect);
     xform->pretendNotToBeIdentityForTesting();
-    return std::move(xform);
+    return xform;
 }
 
 bool SkColorSpaceXform::apply(ColorFormat dstColorFormat, void* dst,

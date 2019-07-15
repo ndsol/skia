@@ -34,6 +34,7 @@
 // IWYU pragma: end_exports
 
 #include <string.h>
+#include <stdarg.h>
 
 /** \file SkTypes.h
 */
@@ -49,13 +50,15 @@
     The platform implementation must not return, but should either throw
     an exception or otherwise exit.
 */
-SK_API extern void sk_abort_no_print(void);
+[[noreturn]] SK_API extern void sk_abort_no_print(void);
 
 #define SK_INIT_TO_AVOID_WARNING    = 0
 
 #ifndef SkDebugf
     SK_API void SkDebugf(const char format[], ...);
 #endif
+
+extern SK_API void (* gSkDebugVPrinter)(const char format[], va_list args);
 
 // SkASSERT, SkASSERTF and SkASSERT_RELEASE can be used as stand alone assertion expressions, e.g.
 //    uint32_t foo(int x) {
@@ -87,7 +90,7 @@ SK_API extern void sk_abort_no_print(void);
     #define SkDEBUGFAIL(message)
     #define SkDEBUGFAILF(fmt, ...)
     #define SkDEBUGCODE(...)
-    #define SkDEBUGF(args)
+    #define SkDEBUGF(args       )       SkDebugf args
 
     // unlike SkASSERT, this guy executes its condition in the non-debug build.
     // The if is present so that this can be used with functions marked SK_WARN_UNUSED_RESULT.

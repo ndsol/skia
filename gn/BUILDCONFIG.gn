@@ -1,4 +1,5 @@
 # Copyright 2016 Google Inc.
+# Copyright 2017-2018 (c) Volcano Authors
 #
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -32,6 +33,7 @@ declare_args() {
   win_toolchain_version = ""
 
   clang_win = ""
+  use_dynamic_crt = false
 }
 declare_args() {
   is_debug = !is_official_build
@@ -161,6 +163,16 @@ if (target_os == "win") {
   }
 }
 
+win_toolchain_archdir = ""
+if (host_os == "win" && msvc != 2015) {
+  if (host_cpu == "x86") {
+    win_toolchain_archdir = "bin/HostX86"
+  } else if (host_cpu == "x64") {
+    win_toolchain_archdir = "bin/HostX64"
+  } else {
+    assert(false, "Unknown host_cpu for host_os == win")
+  }
+}
 if (target_os == "win") {
   if (msvc == 2017 && win_toolchain_version == "") {
     win_toolchain_version = exec_script("//gn/highest_version_dir.py",

@@ -64,6 +64,7 @@ public:
     SkSurfaceProps(InitType);
     SkSurfaceProps(uint32_t flags, InitType);
     SkSurfaceProps(const SkSurfaceProps& other);
+    SkSurfaceProps& operator=(const SkSurfaceProps& other);
 
     uint32_t flags() const { return fFlags; }
     SkPixelGeometry pixelGeometry() const { return fPixelGeometry; }

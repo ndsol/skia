@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2017 Google Inc.
 #
@@ -10,6 +10,6 @@ import sys
 
 dirpath, = sys.argv[1:]
 
-print os.path.isdir(dirpath)
+print(os.path.isdir(dirpath))
 
 

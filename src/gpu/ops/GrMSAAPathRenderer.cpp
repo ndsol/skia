@@ -308,6 +308,7 @@ private:
                     linePointCount += quadPts;
                     quadPointCount += 3 * quadPts;
                 }
+                // fall through
                 case SkPath::kQuad_Verb:
                     linePointCount += 1;
                     quadPointCount += 3;

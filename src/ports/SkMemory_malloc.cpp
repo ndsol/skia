@@ -12,6 +12,8 @@
 #define SK_DEBUGFAILF(fmt, ...) \
     SkASSERT((SkDebugf(fmt"\n", __VA_ARGS__), false))
 
+SK_API void (* gSkDebugVPrinter)(const char format[], va_list args) = NULL;
+
 static inline void sk_out_of_memory(size_t size) {
     SK_DEBUGFAILF("sk_out_of_memory (asked for " SK_SIZE_T_SPECIFIER " bytes)",
                   size);

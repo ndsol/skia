@@ -1,22 +1,13 @@
-/* jconfig.h.  Generated from jconfig.h.in by configure.  */
 /* Version ID for the JPEG library.
  * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
  */
-#define JPEG_LIB_VERSION 62
+#define JPEG_LIB_VERSION  62
 
 /* libjpeg-turbo version */
-#define LIBJPEG_TURBO_VERSION 1.5.3
+#define LIBJPEG_TURBO_VERSION  2.0.3
 
-/*
- * Add support for arithmetic encoding (C_) and decoding (D_).
- * This matches Android. Note that such JPEGs are likely rare, given lack of
- * support by major browsers.
- */
-/* Support arithmetic encoding */
-#define C_ARITH_CODING_SUPPORTED 1
-
-/* Support arithmetic decoding */
-#define D_ARITH_CODING_SUPPORTED 1
+/* libjpeg-turbo version in integer form */
+#define LIBJPEG_TURBO_VERSION_NUMBER  2000003
 
 /*
  * Define BITS_IN_JSAMPLE as either
@@ -26,8 +17,26 @@
  * JPEG standard, and the IJG code does not support anything else!
  * We do not support run-time selection of data precision, sorry.
  */
+#define BITS_IN_JSAMPLE 8
 
-#define BITS_IN_JSAMPLE  8      /* use 8 or 12 */
+#if BITS_IN_JSAMPLE == 12
+/* 12-bit JPEG support disables the following */
+#define C_ARITH_CODING_SUPPORTED 0
+#define D_ARITH_CODING_SUPPORTED 0
+#define WITH_SIMD 0
+#else
+/* Support arithmetic encoding */
+#define C_ARITH_CODING_SUPPORTED 1
+
+/* Support arithmetic decoding */
+#define D_ARITH_CODING_SUPPORTED 1
+
+/* Use accelerated SIMD routines. */
+#define WITH_SIMD 0
+#endif
+
+/* Support in-memory source/destination managers */
+#define MEM_SRCDST_SUPPORTED 1
 
 /* Define to 1 if you have the <locale.h> header file. */
 #define HAVE_LOCALE_H 1
@@ -38,6 +47,15 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
 
+#ifndef _WIN32
+/* Define if you need to include <sys/types.h> to get size_t. */
+#define NEED_SYS_TYPES_H 1
+
+/* Define if you have BSD-like bzero and bcopy in <strings.h> rather than
+   memset/memcpy in <string.h>. */
+#define NEED_BSD_STRINGS 1
+#endif
+
 /* Define to 1 if the system has the type `unsigned char'. */
 #define HAVE_UNSIGNED_CHAR 1
 
@@ -45,32 +63,34 @@
 #define HAVE_UNSIGNED_SHORT 1
 
 /* Compiler does not support pointers to undefined structures. */
-/* #undef INCOMPLETE_TYPES_BROKEN */
-
-/* Support in-memory source/destination managers */
-#define MEM_SRCDST_SUPPORTED 1
-
-/* Define if you have BSD-like bzero and bcopy in <strings.h> rather than
-   memset/memcpy in <string.h>. */
-/* #undef NEED_BSD_STRINGS */
-
-/* Define if you need to include <sys/types.h> to get size_t. */
-/* #undef NEED_SYS_TYPES_H 1 */
+//#define INCOMPLETE_TYPES_BROKEN 1
 
 /* Define if your (broken) compiler shifts signed values as if they were
    unsigned. */
-/* #undef RIGHT_SHIFT_IS_UNSIGNED */
-
-/* Use accelerated SIMD routines. */
-#define WITH_SIMD 1
+//#define RIGHT_SHIFT_IS_UNSIGNED 1
 
 /* Define to 1 if type `char' is unsigned and you are not using gcc.  */
-#ifndef __CHAR_UNSIGNED__
-/* # undef __CHAR_UNSIGNED__ */
-#endif
+//#ifndef __CHAR_UNSIGNED__
+//  #define __CHAR_UNSIGNED__ 1
+//#endif
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
+
+#ifdef _WIN32
+/* Define "boolean" as unsigned char, not int, per Windows custom */
+#ifndef __RPCNDR_H__            /* don't conflict if rpcndr.h already read */
+typedef unsigned char boolean;
+#endif
+#define HAVE_BOOLEAN            /* prevent jmorecfg.h from redefining it */
+
+/* Define "INT32" as int, not long, per Windows custom */
+#if !(defined(_BASETSD_H_) || defined(_BASETSD_H))   /* don't conflict if basetsd.h already read */
+typedef short INT16;
+typedef signed int INT32;
+#endif
+#define XMD_H                   /* prevent jmorecfg.h from redefining it */
+#endif

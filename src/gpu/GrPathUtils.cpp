@@ -181,6 +181,7 @@ int GrPathUtils::worstCasePointCount(const SkPath& path, int* subpaths, SkScalar
                 for (int i = 0; i < converter.countQuads(); ++i) {
                     pointCount += quadraticPointCount(quadPts + 2*i, tol);
                 }
+                break;
             }
             case SkPath::kQuad_Verb:
                 pointCount += quadraticPointCount(pts, tol);

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2016 Google Inc.
 #
@@ -24,7 +24,7 @@ objects = open(rspfile).read().split()
 # It also spams stderr with warnings about objects having no symbols.
 pipe = subprocess.Popen([ar, "rcs", output] + objects, stderr=subprocess.PIPE)
 _, err = pipe.communicate()
-for line in err.splitlines():
+for line in err.decode(sys.stdout.encoding).splitlines():
   if 'has no symbols' not in line:
     sys.stderr.write(line + '\n')
 sys.exit(pipe.returncode)

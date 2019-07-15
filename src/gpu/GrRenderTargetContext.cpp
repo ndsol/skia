@@ -552,6 +552,7 @@ void GrRenderTargetContext::drawRect(const GrClip& clip,
                                         GrStyle::SimpleFill());
                         return;
                     }
+                    // fall through
                 case SkPaint::kBevel_Join:
                     if (!rect.width()) {
                         this->drawRect(clip, std::move(paint), aa, viewMatrix,

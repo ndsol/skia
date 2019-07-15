@@ -140,6 +140,23 @@ SkRasterClip::SkRasterClip(const SkRasterClip& src) {
     SkDEBUGCODE(this->validate();)
 }
 
+SkRasterClip& SkRasterClip::operator=(const SkRasterClip& src) {
+    AUTO_RASTERCLIP_VALIDATE(src);
+
+    fIsBW = src.fIsBW;
+    if (fIsBW) {
+        fBW = src.fBW;
+    } else {
+        fAA = src.fAA;
+    }
+
+    fIsEmpty = src.isEmpty();
+    fIsRect = src.isRect();
+    fClipRestrictionRect = src.fClipRestrictionRect;
+    SkDEBUGCODE(this->validate();)
+    return *this;
+}
+
 SkRasterClip::SkRasterClip(const SkRegion& rgn) : fBW(rgn) {
     fIsBW = true;
     fIsEmpty = this->computeIsEmpty();  // bounds might be empty, so compute

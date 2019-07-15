@@ -68,6 +68,7 @@ inline void SkTextMapStateProc::operator()(const SkScalar pos[], SkPoint* loc) c
         break;
     default:
         SkASSERT(false);
+        // fall through
     case kX:
         fProc(fMatrix, *pos + fOffset.x(), fOffset.y(), loc);
         break;

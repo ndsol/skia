@@ -466,6 +466,7 @@ bool SkPath::isRectContour(bool allowPartial, int* currVerb, const SkPoint** pts
                 pts = *ptsPtr;
                 autoClose = true;
                 insertClose = false;
+                // fall through
             case kLine_Verb: {
                 SkScalar left = last.fX;
                 SkScalar top = last.fY;

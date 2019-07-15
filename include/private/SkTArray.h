@@ -483,7 +483,7 @@ private:
     }
 
     template <bool E = MEM_MOVE> SK_WHEN(E, void) move(int dst, int src) {
-        memcpy(&fItemArray[dst], &fItemArray[src], sizeof(T));
+        *(&fItemArray[dst]) = *(&fItemArray[src]);
     }
     template <bool E = MEM_MOVE> SK_WHEN(E, void) move(void* dst) {
         sk_careful_memcpy(dst, fMemArray, fCount * sizeof(T));

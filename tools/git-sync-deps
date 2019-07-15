@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 Google Inc.
+# Copyright 2017-2018 (c) Volcano Authors
 #
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -31,6 +32,7 @@ Git Config:
 
 
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -94,6 +96,8 @@ def is_git_toplevel(git, directory):
   try:
     toplevel = subprocess.check_output(
       [git, 'rev-parse', '--show-toplevel'], cwd=directory).strip()
+    if sys.version_info > (3, 0):
+      toplevel = toplevel.decode(sys.stdout.encoding)
     return os.path.realpath(directory) == os.path.realpath(toplevel)
   except subprocess.CalledProcessError:
     return False
@@ -127,9 +131,34 @@ def git_checkout_to_directory(git, repo, checkoutable, directory, verbose):
 
   Raises an exception if any calls to git fail.
   """
+  need_unshallow = False
   if not os.path.isdir(directory):
-    subprocess.check_call(
-      [git, 'clone', '--quiet', repo, directory])
+    need_unshallow = True
+    clone_args = [git, 'clone']
+    depth = os.environ.get('GIT_SYNC_SHALLOW', '5')
+    try:
+      depth = int(depth)
+    except ValueError as e:
+      depth = -1
+    if depth < 0:
+      sys.stdout.write('Using 5, ignoring invalid GIT_SYNC_SHALLOW = "%s"' %
+                       os.environ.get('GIT_SYNC_SHALLOW', '5'))
+      depth = 5
+
+    # Never do a shallow clone if checkoutable is a branch or tag.
+    # Shallow clones will miss most of the branches / tags.
+    # Only do a shallow clone if checkoutable is a hash.
+    if depth > 0 and re.match('^[A-Fa-f0-9]+$', checkoutable):
+      clone_args.append('--depth=%s' % depth)
+    subprocess.check_call(clone_args + [repo, directory])
+  elif is_git_toplevel(git, directory):
+    # early out: if there is just 1 commit, do not clone or fetch
+    # this is a bare-bones prepopulated clone, and is ready for use
+    count = subprocess.check_output([git, 'rev-list', '--count', 'HEAD'],
+                                    cwd=directory)
+    count = count.decode(sys.stdout.encoding).strip()
+    if count == '1':
+      return
 
   if not is_git_toplevel(git, directory):
     # if the directory exists, but isn't a git repo, you will modify
@@ -157,9 +186,16 @@ def git_checkout_to_directory(git, repo, checkoutable, directory, verbose):
   subprocess.check_call(
       [git, 'remote', 'set-url', 'origin', repo], cwd=directory)
 
-  subprocess.check_call([git, 'fetch', '--quiet'], cwd=directory)
+  fetch_args = [git, 'fetch', '--quiet']
+  if need_unshallow:
+    fetch_args.append('--unshallow')
+  subprocess.check_call(fetch_args, cwd=directory)
 
-  subprocess.check_call([git, 'checkout', '--quiet', checkoutable], cwd=directory)
+  if 0 != subprocess.call([git, 'checkout', '--quiet',
+                           checkoutable], cwd=directory):
+    subprocess.call([git, 'show-ref'], cwd=directory)
+    # Show user the problem by re-running git checkout
+    subprocess.check_call([git, 'checkout', checkoutable], cwd=directory)
 
   if verbose:
     status(directory, checkoutable)  # Success.
@@ -167,7 +203,10 @@ def git_checkout_to_directory(git, repo, checkoutable, directory, verbose):
 
 def parse_file_to_dict(path):
   dictionary = {}
-  execfile(path, dictionary)
+  if (sys.version_info > (3, 0)):
+    exec(open(path).read(), dictionary)
+  else:
+    execfile(path, dictionary)
   return dictionary
 
 
@@ -221,15 +260,39 @@ def git_sync_deps(deps_file_path, command_line_os_requests, verbose):
     git_sync_deps(recursive_path, command_line_os_requests, verbose)
 
 
+class ThreadWithExceptions(threading.Thread):
+  def run(self):
+    self.exc = None
+    try:
+      if hasattr(self, '_Thread__target'):
+        # Thread uses name mangling prior to Python 3.
+        self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+      else:
+        self.ret = self._target(*self._args, **self._kwargs)
+    except BaseException as e:
+      self.exc = e
+
+  def join(self):
+    super(ThreadWithExceptions, self).join()
+    if self.exc:
+      raise self.exc
+    return self.ret
+
 def multithread(function, list_of_arg_lists):
   # for args in list_of_arg_lists:
   #   function(*args)
   # return
   threads = []
+  done = []
+  MAX_PARALLEL = 2
   for args in list_of_arg_lists:
-    thread = threading.Thread(None, function, None, args)
+    thread = ThreadWithExceptions(None, function, None, args)
     thread.start()
     threads.append(thread)
+    if len(threads) > MAX_PARALLEL:
+      threads[0].join()
+      done.append(threads[0])
+      threads = threads[1:]
   for thread in threads:
     thread.join()
 
@@ -243,9 +306,6 @@ def main(argv):
     return 1
 
   git_sync_deps(deps_file_path, argv, verbose)
-  subprocess.check_call(
-      [sys.executable,
-       os.path.join(os.path.dirname(deps_file_path), 'bin', 'fetch-gn')])
   return 0
 
 

@@ -48,7 +48,14 @@ SkPDFUnion& SkPDFUnion::operator=(SkPDFUnion&& other) {
 
 SkPDFUnion::SkPDFUnion(SkPDFUnion&& other) {
     SkASSERT(this != &other);
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 800)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
     memcpy(this, &other, sizeof(*this));
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 800)
+#pragma GCC diagnostic pop
+#endif
     other.fType = Type::kDestroyed;
 }
 

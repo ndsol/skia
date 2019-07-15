@@ -67,7 +67,7 @@ sk_sp<SkPDFObject> SkPDFMetadata::MakeDocumentInformationDict(
     if (metadata.fModified.fEnabled) {
         dict->insertString("ModDate", pdf_date(metadata.fModified.fDateTime));
     }
-    return dict;
+    return dict;  // std::move converts from sk_sp<SkPDFDict> to sk_sp<SkPDFObject>
 }
 
 SkPDFMetadata::UUID SkPDFMetadata::CreateUUID(
@@ -119,7 +119,7 @@ sk_sp<SkPDFObject> SkPDFMetadata::MakePdfId(const UUID& doc,
             SkString(reinterpret_cast<const char*>(&doc), sizeof(UUID)));
     array->appendString(
             SkString(reinterpret_cast<const char*>(&instance), sizeof(UUID)));
-    return array;
+    return array;  // std::move converts from sk_sp<SkPDFArray> to sk_sp<SkPDFObject>
 }
 
 // Convert a block of memory to hexadecimal.  Input and output pointers will be
@@ -208,6 +208,13 @@ const SkString escape_xml(const SkString& input,
         strncpy(out, before, beforeLen);
         out += beforeLen;
     }
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic push
+#endif
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+// Silence error that strlen() omits \0 terminator for kAmp, kLt.
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
     static const char kAmp[] = "&amp;";
     static const char kLt[] = "&lt;";
     for (size_t i = 0; i < input.size(); ++i) {
@@ -216,6 +223,9 @@ const SkString escape_xml(const SkString& input,
             out += strlen(kAmp);
         } else if (input[i] == '<') {
             strncpy(out, kLt, strlen(kLt));
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic pop
+#endif
             out += strlen(kLt);
         } else {
             *out++ = input[i];

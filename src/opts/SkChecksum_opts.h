@@ -197,8 +197,8 @@ static inline T unaligned_load(const uint8_t* src) {
         // Handle last 0-3 bytes.
         uint32_t k = 0;
         switch (bytes & 3) {
-            case 3: k ^= data[2] << 16;
-            case 2: k ^= data[1] <<  8;
+            case 3: k ^= data[2] << 16; // fall through
+            case 2: k ^= data[1] <<  8; // fall through
             case 1: k ^= data[0] <<  0;
                     k *= 0xcc9e2d51;
                     k = (k << 15) | (k >> 17);

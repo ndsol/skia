@@ -642,7 +642,8 @@ void SkDraw::drawPoints(SkCanvas::PointMode mode, size_t count,
                         break;
                     }
                 }
-                // couldn't take fast path so fall through!
+                // couldn't take fast path so
+                // fall through
             case SkCanvas::kPolygon_PointMode: {
                 count -= 1;
                 SkPath path;

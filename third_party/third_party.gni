@@ -10,7 +10,12 @@ template("third_party") {
     }
     include_dirs = invoker.public_include_dirs
   }
-  source_set(target_name) {
+ if (defined(invoker.is_source_set) && invoker.is_source_set) {
+    third_party_type = "source_set"
+  } else {
+    third_party_type = "static_library"
+  }
+  target(third_party_type, target_name) {
     forward_variables_from(invoker, "*", [ "public_include_dirs" ])
     public_configs = [ ":" + target_name + "_public" ]
 

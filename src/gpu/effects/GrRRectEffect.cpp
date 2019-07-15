@@ -733,6 +733,7 @@ std::unique_ptr<GrFragmentProcessor> GrRRectEffect::Make(GrClipEdgeType edgeType
                 // This rrect should have been caught in the simple case above. Though, it would
                 // be correctly handled in the fallthrough code.
                 SkASSERT(false);
+                // fall through
             case CircularRRectEffect::kTopLeft_CornerFlag:
             case CircularRRectEffect::kTopRight_CornerFlag:
             case CircularRRectEffect::kBottomRight_CornerFlag:

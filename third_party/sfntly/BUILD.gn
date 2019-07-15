@@ -15,8 +15,6 @@ third_party("sfntly") {
     "//third_party/icu",
   ]
   sources = [
-    "../externals/sfntly/cpp/src/sample/chromium/font_subsetter.cc",
-    "../externals/sfntly/cpp/src/sample/chromium/subsetter_impl.cc",
     "../externals/sfntly/cpp/src/sfntly/data/byte_array.cc",
     "../externals/sfntly/cpp/src/sfntly/data/font_data.cc",
     "../externals/sfntly/cpp/src/sfntly/data/font_input_stream.cc",

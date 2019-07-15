@@ -57,6 +57,12 @@ public:
     // Gets the a checksum of the key. Can be used as a hash value for a fast lookup in a cache.
     uint32_t getChecksum() const { return *this->atOffset<uint32_t, kChecksumOffset>(); }
 
+    GrProgramDesc(const GrProgramDesc& other) {
+        uint32_t keyLength = other.keyLength();
+        fKey.reset(SkToInt(keyLength));
+        memcpy(fKey.begin(), other.fKey.begin(), keyLength);
+    }
+
     GrProgramDesc& operator= (const GrProgramDesc& other) {
         uint32_t keyLength = other.keyLength();
         fKey.reset(SkToInt(keyLength));

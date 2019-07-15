@@ -1642,8 +1642,18 @@ static void test_desc(const SkScalerContextRec& rec,
     SkDescriptor*       desc1 = ad1.getDesc();
     SkDescriptor*       desc2 = ad2.getDesc();
 
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic push
+#endif
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+// Silence error that memset cannot be used on a non-trivial class.
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
     memset(desc1, 0x00, descSize);
     memset(desc2, 0xFF, descSize);
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic pop
+#endif
 
     desc1->init();
     desc2->init();

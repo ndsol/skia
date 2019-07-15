@@ -21,6 +21,10 @@ void SkDebugf(const char format[], ...) {
     va_list args1, args2;
     va_start(args1, format);
 
+    if (gSkDebugVPrinter) {
+        gSkDebugVPrinter(format, args1);
+        return;
+    }
     if (gSkDebugToStdOut) {
         va_copy(args2, args1);
         vprintf(format, args2);

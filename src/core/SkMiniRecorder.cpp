@@ -47,7 +47,17 @@ template <typename T>
 class SkMiniPicture final : public SkPicture {
 public:
     SkMiniPicture(const SkRect* cull, T* op) : fCull(cull ? *cull : bounds(*op)) {
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic push
+#endif
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+// Silence error that memcpy cannot be used on a class.
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
         memcpy(&fOp, op, sizeof(fOp));  // We take ownership of op's guts.
+#if defined(__GNUC__) /* MSVC complains about pragma GCC */
+#pragma GCC diagnostic pop
+#endif
     }
 
     void playback(SkCanvas* c, AbortCallback*) const override {

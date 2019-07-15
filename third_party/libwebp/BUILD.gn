@@ -1,7 +1,4 @@
-# Copyright 2016 Google Inc.
-#
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Copyright 2017-2018 (c) Volcano Authors
 
 declare_args() {
   skia_use_system_libwebp = is_official_build
@@ -26,152 +23,150 @@ if (skia_use_system_libwebp) {
       # TODO: swizzle ourself in SkWebpCodec instead of requiring this non-standard libwebp.
       "WEBP_SWAP_16BIT_CSP",
     ]
-  }
-
-  third_party("libwebp_sse41") {
-    public_include_dirs = [ "../externals/libwebp/src" ]
-    configs += [ ":libwebp_defines" ]
-    sources = [
-      "../externals/libwebp/src/dsp/alpha_processing_sse41.c",
-      "../externals/libwebp/src/dsp/dec_sse41.c",
-      "../externals/libwebp/src/dsp/enc_sse41.c",
-      "../externals/libwebp/src/dsp/lossless_enc_sse41.c",
-    ]
-    if ((current_cpu == "x86" || current_cpu == "x64") &&
-        (!is_win || is_clang)) {
-      cflags_c = [ "-msse4.1" ]
+    if (is_win) {
+      defines += [ "UNICODE", "_UNICODE" ]
+    } else if (is_android) {
+      defines += [ "HAVE_CPU_FEATURES_H" ]
     }
-  }
-
-  third_party("libwebp_avx2") {
-    public_include_dirs = [ "../externals/libwebp/src" ]
-    configs += [ ":libwebp_defines" ]
-    sources = [
-      "../externals/libwebp/src/dsp/enc_avx2.c",
-    ]
     if ((current_cpu == "x86" || current_cpu == "x64") &&
         (!is_win || is_clang)) {
-      cflags_c = [ "-mavx2" ]
+      cflags_c = [ "-msse4.1", "-mavx2" ]
     }
   }
 
   third_party("libwebp") {
-    public_include_dirs = [ "../externals/libwebp/src" ]
-
-    deps = [
-      ":libwebp_avx2",
-      ":libwebp_sse41",
-    ]
+    public_include_dirs = [ "../externals/libwebp" ]
+    configs += [ ":libwebp_defines" ]
+    deps = []
     if (is_android) {
-      deps += [ "//third_party/cpu-features" ]
+      deps += [ "../cpu-features" ]
+    }
+    defines = []
+    if (true) {
+      defines += [ "WEBP_HAVE_PNG=1" ]
+      deps += [ "../libpng" ]
+    }
+    if (true) {
+      defines += [ "WEBP_HAVE_JPEG=1" ]
+      deps += [ "../libjpeg-turbo:libjpeg" ]
+    }
+    #"WEBP_HAVE_GIF=1",
+    #"WEBP_HAVE_TIFF=1",
+
+    src = [
+      # libwebpdecode from src/dec/Makefile.am:
+      "dec/alpha_dec.c",
+      "dec/buffer_dec.c",
+      "dec/frame_dec.c",
+      "dec/idec_dec.c",
+      "dec/io_dec.c",
+      "dec/quant_dec.c",
+      "dec/tree_dec.c",
+      "dec/vp8_dec.c",
+      "dec/vp8l_dec.c",
+      "dec/webp_dec.c",
+      # libwebpdsp COMMON_SOURCES from src/dsp/Makefile.am:
+      "dsp/alpha_processing.c",
+      "dsp/cpu.c",
+      "dsp/dec.c",
+      "dsp/dec_clip_tables.c",
+      "dsp/filters.c",
+      "dsp/lossless.c",
+      "dsp/rescaler.c",
+      "dsp/upsampling.c",
+      "dsp/yuv.c",
+      # libwebpdsp ENC_SOURCES from src/dsp/Makefile.am:
+      "dsp/cost.c",
+      "dsp/enc.c",
+      "dsp/lossless_enc.c",
+      "dsp/ssim.c",
+      # libwebpencode from src/enc/Makefile.am
+      "enc/alpha_enc.c",
+      "enc/analysis_enc.c",
+      "enc/backward_references_cost_enc.c",
+      "enc/backward_references_enc.c",
+      "enc/config_enc.c",
+      "enc/cost_enc.c",
+      "enc/filter_enc.c",
+      "enc/frame_enc.c",
+      "enc/histogram_enc.c",
+      "enc/iterator_enc.c",
+      "enc/near_lossless_enc.c",
+      "enc/picture_enc.c",
+      "enc/picture_csp_enc.c",
+      "enc/picture_psnr_enc.c",
+      "enc/picture_rescale_enc.c",
+      "enc/picture_tools_enc.c",
+      "enc/predictor_enc.c",
+      "enc/quant_enc.c",
+      "enc/syntax_enc.c",
+      "enc/token_enc.c",
+      "enc/tree_enc.c",
+      "enc/vp8l_enc.c",
+      "enc/webp_enc.c",
+      # libwebputils COMMON_SOURCES from src/utils/Makefile.am
+      "utils/bit_reader_utils.c",
+      "utils/color_cache_utils.c",
+      "utils/filters_utils.c",
+      "utils/huffman_utils.c",
+      "utils/quant_levels_dec_utils.c",
+      "utils/rescaler_utils.c",
+      "utils/random_utils.c",
+      "utils/thread_utils.c",
+      "utils/utils.c",
+      # libwebputils ENC_SOURCES from src/utils/Makefile.am
+      "utils/bit_writer_utils.c",
+      "utils/huffman_encode_utils.c",
+      "utils/quant_levels_utils.c",
+      # libwebpdemux from src/demux/Makefile.am
+      "demux/anim_decode.c",
+      "demux/demux.c",
+      # libwebpmux from src/mux/Makefile.am
+      "mux/anim_encode.c",
+      "mux/muxedit.c",
+      "mux/muxinternal.c",
+      "mux/muxread.c",
+    ]
+    if (target_cpu == "x64") {
+      src += [
+        "dsp/alpha_processing_sse41.c",
+        "dsp/dec_sse41.c",
+        "dsp/upsampling_sse41.c",
+        "dsp/yuv_sse41.c",
+        "dsp/alpha_processing_sse2.c",
+        "dsp/dec_sse2.c",
+        "dsp/filters_sse2.c",
+        "dsp/lossless_sse2.c",
+        "dsp/rescaler_sse2.c",
+        "dsp/upsampling_sse2.c",
+        "dsp/yuv_sse2.c",
+        # libwebpdsp encode from src/dsp/Makefile.am:
+        "dsp/cost_sse2.c",
+        "dsp/enc_sse2.c",
+        "dsp/lossless_enc_sse2.c",
+        "dsp/ssim_sse2.c",
+        "dsp/enc_sse41.c",
+        "dsp/lossless_enc_sse41.c",
+      ]
+    } else if (target_cpu == "arm64" || target_cpu == "arm") {
+      src += [
+        "dsp/alpha_processing_neon.c",
+        "dsp/dec_neon.c",
+        "dsp/filters_neon.c",
+        "dsp/lossless_neon.c",
+        "dsp/rescaler_neon.c",
+        "dsp/upsampling_neon.c",
+        "dsp/yuv_neon.c",
+        # libwebpdsp encode from src/dsp/Makefile.am:
+        "dsp/cost_neon.c",
+        "dsp/enc_neon.c",
+        "dsp/lossless_enc_neon.c",
+      ]
     }
 
-    configs += [ ":libwebp_defines" ]
-    sources = [
-      "../externals/libwebp/src/dec/alpha_dec.c",
-      "../externals/libwebp/src/dec/buffer_dec.c",
-      "../externals/libwebp/src/dec/frame_dec.c",
-      "../externals/libwebp/src/dec/idec_dec.c",
-      "../externals/libwebp/src/dec/io_dec.c",
-      "../externals/libwebp/src/dec/quant_dec.c",
-      "../externals/libwebp/src/dec/tree_dec.c",
-      "../externals/libwebp/src/dec/vp8_dec.c",
-      "../externals/libwebp/src/dec/vp8l_dec.c",
-      "../externals/libwebp/src/dec/webp_dec.c",
-      "../externals/libwebp/src/demux/demux.c",
-      "../externals/libwebp/src/dsp/alpha_processing.c",
-      "../externals/libwebp/src/dsp/alpha_processing_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/alpha_processing_neon.c",
-      "../externals/libwebp/src/dsp/alpha_processing_sse2.c",
-      "../externals/libwebp/src/dsp/argb.c",
-      "../externals/libwebp/src/dsp/argb_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/argb_sse2.c",
-      "../externals/libwebp/src/dsp/cost.c",
-      "../externals/libwebp/src/dsp/cost_mips32.c",
-      "../externals/libwebp/src/dsp/cost_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/cost_sse2.c",
-      "../externals/libwebp/src/dsp/cpu.c",
-      "../externals/libwebp/src/dsp/dec.c",
-      "../externals/libwebp/src/dsp/dec_clip_tables.c",
-      "../externals/libwebp/src/dsp/dec_mips32.c",
-      "../externals/libwebp/src/dsp/dec_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/dec_neon.c",
-      "../externals/libwebp/src/dsp/dec_sse2.c",
-      "../externals/libwebp/src/dsp/enc.c",
-      "../externals/libwebp/src/dsp/enc_mips32.c",
-      "../externals/libwebp/src/dsp/enc_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/enc_msa.c",
-      "../externals/libwebp/src/dsp/enc_neon.c",
-      "../externals/libwebp/src/dsp/enc_sse2.c",
-      "../externals/libwebp/src/dsp/filters.c",
-      "../externals/libwebp/src/dsp/filters_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/filters_msa.c",
-      "../externals/libwebp/src/dsp/filters_neon.c",
-      "../externals/libwebp/src/dsp/filters_sse2.c",
-      "../externals/libwebp/src/dsp/lossless.c",
-      "../externals/libwebp/src/dsp/lossless_enc.c",
-      "../externals/libwebp/src/dsp/lossless_enc_mips32.c",
-      "../externals/libwebp/src/dsp/lossless_enc_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/lossless_enc_msa.c",
-      "../externals/libwebp/src/dsp/lossless_enc_neon.c",
-      "../externals/libwebp/src/dsp/lossless_enc_sse2.c",
-      "../externals/libwebp/src/dsp/lossless_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/lossless_msa.c",
-      "../externals/libwebp/src/dsp/lossless_neon.c",
-      "../externals/libwebp/src/dsp/lossless_sse2.c",
-      "../externals/libwebp/src/dsp/rescaler.c",
-      "../externals/libwebp/src/dsp/rescaler_mips32.c",
-      "../externals/libwebp/src/dsp/rescaler_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/rescaler_msa.c",
-      "../externals/libwebp/src/dsp/rescaler_neon.c",
-      "../externals/libwebp/src/dsp/rescaler_sse2.c",
-      "../externals/libwebp/src/dsp/upsampling.c",
-      "../externals/libwebp/src/dsp/upsampling_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/upsampling_msa.c",
-      "../externals/libwebp/src/dsp/upsampling_neon.c",
-      "../externals/libwebp/src/dsp/upsampling_sse2.c",
-      "../externals/libwebp/src/dsp/yuv.c",
-      "../externals/libwebp/src/dsp/yuv_mips32.c",
-      "../externals/libwebp/src/dsp/yuv_mips_dsp_r2.c",
-      "../externals/libwebp/src/dsp/yuv_sse2.c",
-      "../externals/libwebp/src/enc/alpha_enc.c",
-      "../externals/libwebp/src/enc/analysis_enc.c",
-      "../externals/libwebp/src/enc/backward_references_enc.c",
-      "../externals/libwebp/src/enc/config_enc.c",
-      "../externals/libwebp/src/enc/cost_enc.c",
-      "../externals/libwebp/src/enc/filter_enc.c",
-      "../externals/libwebp/src/enc/frame_enc.c",
-      "../externals/libwebp/src/enc/histogram_enc.c",
-      "../externals/libwebp/src/enc/iterator_enc.c",
-      "../externals/libwebp/src/enc/near_lossless_enc.c",
-      "../externals/libwebp/src/enc/picture_csp_enc.c",
-      "../externals/libwebp/src/enc/picture_enc.c",
-      "../externals/libwebp/src/enc/picture_psnr_enc.c",
-      "../externals/libwebp/src/enc/picture_rescale_enc.c",
-      "../externals/libwebp/src/enc/picture_tools_enc.c",
-      "../externals/libwebp/src/enc/predictor_enc.c",
-      "../externals/libwebp/src/enc/quant_enc.c",
-      "../externals/libwebp/src/enc/syntax_enc.c",
-      "../externals/libwebp/src/enc/token_enc.c",
-      "../externals/libwebp/src/enc/tree_enc.c",
-      "../externals/libwebp/src/enc/vp8l_enc.c",
-      "../externals/libwebp/src/enc/webp_enc.c",
-      "../externals/libwebp/src/mux/anim_encode.c",
-      "../externals/libwebp/src/mux/muxedit.c",
-      "../externals/libwebp/src/mux/muxinternal.c",
-      "../externals/libwebp/src/mux/muxread.c",
-      "../externals/libwebp/src/utils/bit_reader_utils.c",
-      "../externals/libwebp/src/utils/bit_writer_utils.c",
-      "../externals/libwebp/src/utils/color_cache_utils.c",
-      "../externals/libwebp/src/utils/filters_utils.c",
-      "../externals/libwebp/src/utils/huffman_encode_utils.c",
-      "../externals/libwebp/src/utils/huffman_utils.c",
-      "../externals/libwebp/src/utils/quant_levels_dec_utils.c",
-      "../externals/libwebp/src/utils/quant_levels_utils.c",
-      "../externals/libwebp/src/utils/random_utils.c",
-      "../externals/libwebp/src/utils/rescaler_utils.c",
-      "../externals/libwebp/src/utils/thread_utils.c",
-      "../externals/libwebp/src/utils/utils.c",
-    ]
+    sources = []
+    foreach (s, src) {
+      sources += [ "../externals/libwebp/src/$s" ]
+    }
   }
 }

@@ -260,7 +260,8 @@ int SkDCubic::ComplexBreak(const SkPoint pointsPtr[4], SkScalar* t) {
                 return (int) (t[0] > 0 && t[0] < 1);
             }
         }
-        // fall through if no t value found
+        // if no t value found
+        // fall through
         case SkCubicType::kSerpentine:
         case SkCubicType::kLocalCusp:
         case SkCubicType::kCuspAtInfinity: {
